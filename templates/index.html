@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if current_user.is_authenticated %}
+<div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+    <p class="font-bold">Welcome, {{ current_user.username }}!</p>
+    <p>You're logged in and ready to share your fishing adventures.</p>
+</div>
+<div class="mb-6">
+    <a href="{{ url_for('create_post') }}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+        <i class="fas fa-plus mr-2"></i>Create New Post
+    </a>
+</div>
+{% endif %}
+
+{% if posts %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for post in posts %}
+    <div class="bg-white rounded-lg shadow-md p-4">
+        <div class="flex items-center mb-4">
+            <img src="{{ url_for('static', filename='img/default_avatar.svg') }}" alt="Avatar" class="w-10 h-10 rounded-full mr-2">
+            <a href="{{ url_for('profile', username=post.author.username) }}" class="font-semibold text-blue-500">{{ post.author.username }}</a>
+        </div>
+        {% if post.image %}
+        <img src="{{ url_for('static', filename='img/uploads/' + post.image) }}" alt="Post image" class="w-full h-64 object-cover rounded-lg mb-4">
+        {% endif %}
+        <p class="mb-4">{{ post.content }}</p>
+        <div class="text-sm text-gray-500 mb-2">{{ post.created_at.strftime('%B %d, %Y') }}</div>
+        <div class="border-t pt-4">
+            <h4 class="font-semibold mb-2">Comments:</h4>
+            {% for comment in post.comments %}
+            <div class="mb-2">
+                <span class="font-semibold">{{ comment.user.username }}:</span> {{ comment.content }}
+            </div>
+            {% endfor %}
+            {% if current_user.is_authenticated %}
+            <form action="{{ url_for('add_comment') }}" method="post" class="mt-4">
+                <input type="hidden" name="post_id" value="{{ post.id }}">
+                <textarea name="content" rows="2" class="w-full p-2 border rounded" placeholder="Add a comment..." required></textarea>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded mt-2">Comment</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-xl text-gray-600">No posts available. {% if current_user.is_authenticated %}Be the first to create a post!{% else %}Log in to create a post!{% endif %}</p>
+{% endif %}
+{% endblock %}
